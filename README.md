@@ -317,5 +317,375 @@ OpenLANE is an advanced, open-source framework designed for automating the ASIC 
 
 ## Day-1 Using OpenLANE flow and performing synthesis
 
+Objectives: 
+1. Run 'picorv32a' design synthesis using OpenLANE flow and generate necessary outputs.
+2. Calculate the flop ratio based on synthesis results.
+
+
+### Task 1: Running 'picorv32a' Design Synthesis using OpenLANE
+
+Steps to perform synthesis:
+  1.Change to the OpenLANE flow directory:
+
+```bash
+cd Desktop/work/tools/openlane_working_dir/openlane
+```
+  2.(Optional) Set up Docker alias if needed:
+  ```bash
+alias docker='docker run -it -v $(pwd):/openLANE_flow -v $PDK_ROOT:$PDK_ROOT -e PDK_ROOT=$PDK_ROOT -u $(id -u $USER):$(id -g $USER) efabless/openlane:v0.21'
+```
+![image](https://github.com/user-attachments/assets/53f47296-e21b-4049-acda-a1e6a28c6a71)
+
+3.Start the Docker container:
+```bash
+docker
+```
+4.Enter OpenLANE interactive mode:
+```tcl
+./flow.tcl -interactive
+```
+5.Load the OpenLANE package:
+```tcl
+package require openlane 0.9
+```
+6.Prepare the design 'picorv32a':
+```tcl
+prep -design picorv32a
+```
+7.Perform the synthesis:
+```tcl
+run_synthesis
+```
+8.Exit the OpenLANE flow:
+```tcl
+exit
+```
+Synthesis Output:
+Below are screenshots showcasing the execution of synthesis:
+* Preparation Completion:
+  ![image](https://github.com/user-attachments/assets/a5d5b1e7-cfe1-4917-9dad-8bf575f3f1a3)
+
+  
+
+* Synthesis Running:
+![image](https://github.com/user-attachments/assets/3f29b930-4a48-42bb-8edb-5fd2fcf3f432)
+  
+
+
+### Task 2: Calculating Flop Ratio
+We calculate the Flop Ratio and the percentage of D Flip-Flops (DFF) using the synthesis statistics report.
+Formulae:
+
+```math
+Flop\ Ratio = \frac{Number\ of\ D\ Flip\ Flops}{Total\ Number\ of\ Cells}
+```
+```math
+Percentage\ of\ DFF's = Flop\ Ratio * 100
+```
+Synthesis Report:
+Below is the synthesis statistics report with relevant values highlighted:
+![image](https://github.com/user-attachments/assets/082845dd-2f17-400c-a6f0-ce8d87dc3da2)
+
+
+
+
+
+
+Values from the Report:
+* Number of D Flip-Flops: 1613
+* Total Number of Cells: 14876
+
+
+Calculation:
+
+```math
+Flop\ Ratio = \frac{1613}{14876} = 0.108429685
+```
+```math
+Percentage\ of\ DFF's = 0.108429685 * 100 = 10.84296854\ \%
+```
+
+![image](https://github.com/user-attachments/assets/bec3a9d0-768f-4626-86af-264f0ecb47ca)
+
+## Section 2 - Good Floorplan vs Bad Floorplan and Introduction to Library Cell 
+
+### Implementation
+Objectives: 
+1.Run 'picorv32a' Design Floorplan Using OpenLANE.
+
+2.Calculate Die Area in Microns.
+
+3.Load Floorplan DEF in Magic Tool.
+
+4.Run Congestion-Aware Placement.
+
+5.Load Placement DEF in Magic Tool.
+
+### Task 1: Run 'picorv32a' Design Floorplan Using OpenLANE.
+
+Steps to perform Floorplan:
+  1.Change to the OpenLANE flow directory:
+
+```bash
+cd Desktop/work/tools/openlane_working_dir/openlane
+```
+  2.(Optional) Set up Docker alias if needed:
+  ```bash
+alias docker='docker run -it -v $(pwd):/openLANE_flow -v $PDK_ROOT:$PDK_ROOT -e PDK_ROOT=$PDK_ROOT -u $(id -u $USER):$(id -g $USER) efabless/openlane:v0.21'
+```
+3.Start the Docker container:
+```bash
+docker
+```
+4.Enter OpenLANE interactive mode:
+```tcl
+./flow.tcl -interactive
+```
+5.Load the OpenLANE package:
+```tcl
+package require openlane 0.9
+```
+6.Prepare the design 'picorv32a':
+```tcl
+prep -design picorv32a
+```
+7.Perform the synthesis:
+```tcl
+run_synthesis
+```
+8.Run the floorplan step:
+```tcl
+run_floorplan
+```
+9.Exit the OpenLANE flow:
+```tcl
+exit
+```
+
+Floorplan Output:
+Below are screenshots showcasing the execution of Floorplan:
+![image](https://github.com/user-attachments/assets/e485cb97-d9e6-4680-b3b7-7946cadf02ff)
+
+----------
+
+
+
+![image](https://github.com/user-attachments/assets/06f090fd-c90b-4123-b007-3b75919b781c)
+
+------------
+
+![image](https://github.com/user-attachments/assets/5cfedad4-1a89-47aa-9226-2635feacdafc)
+
+#### Task 2: Calculate Die Area in Microns.
+
+According to floorplan def
+
+```math
+1000\ Unit\ Distance = 1\ Micron
+```
+```math
+Die\ width\ in\ unit\ distance = 660685 - 0 = 660685
+```
+```math
+Die\ height\ in\ unit\ distance = 671405 - 0 = 671405
+```
+```math
+Distance\ in\ microns = \frac{Value\ in\ Unit\ Distance}{1000}
+```
+```math
+Die\ width\ in\ microns = \frac{660685}{1000} = 660.685\ Microns
+```
+```math
+Die\ height\ in\ microns = \frac{671405}{1000} = 671.405\ Microns
+```
+```math
+Area\ of\ die\ in\ microns = 660.685 * 671.405 = 443587.212425\ Square\ Microns
+```
+
+### Task 3: Load Floorplan DEF in Magic Tool.
+
+Commands to Load Floorplan DEF in Magic:
+1.Change directory to path containing generated floorplan def
+```bash
+cd Desktop/work/tools/openlane_working_dir/openlane/designs/picorv32a/runs/07-09_20-37/results/floorplan/
+```
+2.Command to load the floorplan def in magic tool
+```bash
+magic -T /home/vsduser/Desktop/work/tools/openlane_working_dir/pdks/sky130A/libs.tech/magic/sky130A.tech lef read ../../tmp/merged.lef def read picorv32a.floorplan.def &
+```
+
+![image](https://github.com/user-attachments/assets/584b7f4a-ea74-4118-a748-7508f9492b6f)
+
+* Floorplan Loaded in Magic:
+
+The floorplan DEF file has been successfully loaded into Magic for visualization.
+![image](https://github.com/user-attachments/assets/635653ab-baf5-4d90-ae36-d696bbe96229)
+
+
+
+
+
+* Equidistant Placement of Ports:
+
+This image showcases the equidistant placement of ports, which was configured in the config.tcl file to ensure optimal distribution.
+
+![image](https://github.com/user-attachments/assets/445fa91d-9549-41e2-ad95-738d15fb3e1e)
+
+![image](https://github.com/user-attachments/assets/66ed8ac8-65b9-49ca-9ac6-7610c1235be6)
+
+### Task 4:Run Congestion-Aware Placement.
+
+Command to run placement
+```bash
+run_placement
+```
+* Placement Completion:
+
+
+  The placement run has successfully completed, with the design placed according to congestion and timing constraints.
+  ![image](https://github.com/user-attachments/assets/c56d4a51-9483-4ceb-9aa8-a3086bda80fd)
+
+  
+
+### Task 5: Load Placement DEF in Magic Tool.
+To load the generated placement DEF file in the Magic tool, use the following commands in a separate terminal:
+Commands to Load Placement DEF in Magic
+1.Navigate to the directory containing the placement DEF file:
+```bash
+cd Desktop/work/tools/openlane_working_dir/openlane/designs/picorv32a/runs/07-09_20-37/results/placement/
+```
+2.Load the placement DEF in Magic:
+```bash
+magic -T /home/vsduser/Desktop/work/tools/openlane_working_dir/pdks/sky130A/libs.tech/magic/sky130A.tech \
+lef read ../../tmp/merged.lef def read picorv32a.placement.def &
+```
+* Placement DEF Loaded in Magic
+  
+  The placement DEF file has been successfully loaded into Magic, showing the placement of standard cells and other components.
+  ![image](https://github.com/user-attachments/assets/9c73ea5b-536c-4852-a8bb-0d625d0ba085)
+
+
+* Legally Placed Standard Cells
+  
+  This screenshot shows the standard cells placed legally according to the design rules, ensuring a functional and optimized layout.
+
+  ![image](https://github.com/user-attachments/assets/52b76d9d-ea48-4e72-9827-262c903b2b67)
+
+
+
+Commands to exit from current run
+
+```tcl
+# Exit from OpenLANE flow
+exit
+
+# Exit from OpenLANE flow docker sub-system
+exit
+```
+
+## Section 3 - Design library cell using Magic Layout and ngspice characterization 
+
+### Implementation
+
+Objectives: 
+
+1.Clone the GitHub repository for the Standard Cell Design and Characterization using the OpenLANE flow: [Standard cell design](https://github.com/nickson-jose/vsdstdcelldesign).
+
+2.Open the custom inverter layout in Magic for inspection and exploration.
+
+3.Perform SPICE extraction of the inverter design using Magic.
+
+4.Modify the SPICE model file for further analysis and simulation.
+
+5.Conduct post-layout simulations using ngspice.
+
+6.Rise and Fall Transition Time Calculations.
+
+7.Cell Delay Calculations.
+
+8.Correcting DRC Errors in SkyWater SKY130 Process Using Magic VLSI Layout Tool.
+
+### Task 1: Cloning Custom Inverter Standard Cell Design from GitHub Repository
+1.Navigate to the OpenLANE working directory:
+
+```bash
+cd Desktop/work/tools/openlane_working_dir/openlane
+```
+  2.Clone the custom inverter design repository
+  ```bash
+git clone https://github.com/nickson-jose/vsdstdcelldesign
+```
+3.Move into the repository's directory
+```bash
+cd vsdstdcelldesign
+```
+4.Copy the Magic tech file for easier access
+```bash
+cp ~/Desktop/work/tools/openlane_working_dir/pdks/sky130A/libs.tech/magic/sky130A.tech .
+```
+5.Verify the contents of the directory
+```bash
+ls
+```
+6.Open the custom inverter layout in Magic
+```bash
+magic -T sky130A.tech sky130_inv.mag &
+```
+
+Ensure that you have successfully cloned the repository and opened the custom inverter layout using Magic for further exploration. The screenshot of the commands run is also shown below.
+
+### Task 2: Open the custom inverter layout in Magic for inspection and exploration.
+
+After opening the custom inverter layout into Magic, the design exploration can be conducted by identifying critical components and connections, including NMOS, PMOS, and various signal paths.
+* Steps:
+  1.Load the layout in Magic:
+  ```bash
+  magic -T sky130A.tech sky130_inv.mag &
+  ```
+
+  ![image](https://github.com/user-attachments/assets/8f6c2d21-eb5c-44e0-947e-469e9a6f03c2)
+
+
+  ![image](https://github.com/user-attachments/assets/16f4a4a3-af38-4f27-9772-b20a4df3b504)
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
