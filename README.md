@@ -319,4 +319,3 @@ OpenLANE is an advanced, open-source framework designed for automating the ASIC 
 
 
 
-![image](https://github.com/user-attachments/assets/6bff3448-8d3b-42e2-bceb-7e839352b2e8)
