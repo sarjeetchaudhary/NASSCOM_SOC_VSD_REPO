@@ -1078,6 +1078,664 @@ Post-fix Screenshot:
 
 ![corrected nwell](https://github.com/user-attachments/assets/40f87039-fefe-46ed-8cbe-113875dc8314)
 
+## Section 4 - Pre-layout timing analysis and importance of good clock tree.
+
+### Implementation
+
+Objectives:
+
+1.Fix minor DRC errors and verify the design for flow insertion.
+
+2.Save the finalized layout with a custom name and open for verification.
+
+3.Generate the LEF file from the layout.
+
+4.Copy the LEF and required library files to the 'picorv32a/src' directory.
+
+5.Edit config.tcl to update the library file and add the new LEF into OpenLane flow.
+
+6.Run OpenLane synthesis with the newly inserted custom inverter cell.
+
+7.Address any violations caused by the custom cell by adjusting design parameters.
+
+8.Run floorplanning and placement, verifying the custom cell's integration in the PnR flow.
+
+9.Perform post-synthesis timing analysis using the OpenSTA tool.
+
+10.Apply timing ECO fixes to resolve any timing violations.
+
+11.Replace the old netlist with the updated netlist and implement floorplan, placement, and CTS.
+
+12.Conduct post-CTS timing analysis using OpenROAD.
+
+13.Optimize post-CTS timing by removing sky130_fd_sc_hd__clkbuf_1 from CTS_CLK_BUFFER_LIST.
+
+
+
+### Task 1: Fix minor DRC errors and verify the design for flow insertion.
+
+Conditions to Verify:
+  1. Conditiion 1:
+     * Input and output ports must lie on the intersection of vertical and horizontal tracks.
+  2. Condition 2:
+     * The width of the standard cell should be an odd multiple of the horizontal track pitch.
+  3. Condition 3:
+     * The height of the standard cell should be an even multiple of the vertical track pitch.
+
+Commands to Open the Layout in Magic
+
+```bash
+# Change directory to the vsdstdcelldesign folder
+cd Desktop/work/tools/openlane_working_dir/openlane/vsdstdcelldesign
+```
+
+```bash
+# Open the custom inverter layout in Magic
+magic -T sky130A.tech sky130_inv.mag &
+```
+
+Track Information of sky130_fd_sc_hd
+
+* The track information for the standard cell library sky130_fd_sc_hd is shown below. This will be used to verify the alignment and dimensions of the custom inverter cell.
+
+![image](https://github.com/user-attachments/assets/488797b2-ff4e-4e6e-9ef7-d1429772e350)
+
+
+Setting Grid for Track Alignment
+
+* Use the following commands in the tkcon window to set the grid according to the standard cell track pitch.
+
+```tcl
+# Get syntax for the grid command
+help grid
+```
+```tcl
+# Set grid values for track alignment (locali layer)
+grid 0.46um 0.34um 0.23um 0.17um
+```
+
+Screenshot of Command Execution
+
+![grid](https://github.com/user-attachments/assets/efea418d-51e0-4f8b-aa3f-f87e92cd1cb1)
+
+Condition 1: Port Alignment on Tracks
+
+* Verified that the input and output ports of the custom inverter cell are aligned at the intersections of vertical and horizontal tracks.
+
+![cond 1](https://github.com/user-attachments/assets/6901533f-ff0f-4375-bbac-0427bd499c0e)
+
+Condition 2: Width Verification
+* The width of the standard cell should be an odd multiple of the horizontal track pitch 0.46𝜇𝑚
+
+Horizontal track pitch=0.46 umWidth of standard cell=1.38 um=0.46×3
+
+This condition is satisfied as the width is an odd multiple.
+
+![con 2](https://github.com/user-attachments/assets/f81e8553-3b68-4ad2-8cf7-08c061ea1b73)
+
+Condition 3: Height Verification
+
+* The height of the standard cell should be an even multiple of the vertical track pitch 0.34𝜇𝑚
+
+Vertical track pitch=0.34 umHeight of standard cell=2.72 um=0.34×8
+
+This condition is satisfied as the height is an even multiple.
+
+![con 3](https://github.com/user-attachments/assets/6a261b54-ebd3-4af0-9496-1081579734e4)
+
+### Task 2: Save the finalized layout with a custom name and open for verification.
+
+* Once the layout has been verified and finalized, follow the steps below to save it with a custom name and reopen it for verification.
+
+Command to Save the Layout with a Custom Name in Magic (tkcon Window):
+
+```tcl
+# Command to save layout as a new file
+save sky130_vsdinv.mag
+```
+
+![changing  file name](https://github.com/user-attachments/assets/e46405b6-01da-41f2-b7f7-0c109efc2138)
+
+Command to Open the Newly Saved Layout in Magic:
+
+```bash
+# Open the custom inverter layout in Magic
+magic -T sky130A.tech sky130_vsdinv.mag &
+```
+
+Screenshot of the Newly Saved Layout:
+
+![newly created  file open](https://github.com/user-attachments/assets/5b72d7dd-0771-438d-8270-4c0021b5251b)
+
+
+### Task 3: Generate the LEF file from the layout.
+
+* After finalizing the custom inverter layout, you can generate the LEF (Library Exchange Format) file, which is essential for integrating the cell into the design flow.
+
+  Command to Write the LEF File in Magic (tkcon Window):
+
+  ```tcl
+  # Command to generate LEF
+  lef write
+  ```
+
+  Screenshot of the Command Execution:
+
+  ![lef write](https://github.com/user-attachments/assets/c6af18df-23b9-4c53-b0ae-825b43ac61b2)
+
+  Screenshot of the Newly Created LEF File:
+
+  ![lef file](https://github.com/user-attachments/assets/9e5906dc-d24a-4d27-8ad2-fe79a122956f)
+
+### Task 4: Copy the LEF and required library files to the 'picorv32a/src' directory.
+
+* After generating the LEF file, the next step is to copy it along with the required library files to the picorv32a design's src directory for integration.
+
+  Commands to Copy LEF and Library Files:
+
+  ```bash
+  # Copy the LEF file to the 'picorv32a/src' directory
+  cp sky130_vsdinv.lef ~/Desktop/work/tools/openlane_working_dir/openlane/designs/picorv32a/src/
+  ```
+  ```bash
+  # List and check if the LEF file is copied successfully
+  ls ~/Desktop/work/tools/openlane_working_dir/openlane/designs/picorv32a/src/
+  ```
+  ```bash
+  # Copy the required Liberty (.lib) files
+  cp libs/sky130_fd_sc_hd__* ~/Desktop/work/tools/openlane_working_dir/openlane/designs/picorv32a/src/
+  ```
+  ```bash
+  # List and check if the .lib files are copied successfully
+  ls ~/Desktop/work/tools/openlane_working_dir/openlane/designs/picorv32a/src/
+  ```
+
+  ### Task 5: Edit config.tcl to update the library file and add the new LEF into OpenLane flow.
+
+* To ensure that the custom inverter cell is included in the OpenLane flow, update the config.tcl file by specifying the correct library files and adding the new LEF file.
+
+Commands to Add to config.tcl:
+
+```tcl
+# Set the paths for the new library files
+set ::env(LIB_SYNTH) "$::env(OPENLANE_ROOT)/designs/picorv32a/src/sky130_fd_sc_hd__typical.lib"
+set ::env(LIB_FASTEST) "$::env(OPENLANE_ROOT)/designs/picorv32a/src/sky130_fd_sc_hd__fast.lib"
+set ::env(LIB_SLOWEST) "$::env(OPENLANE_ROOT)/designs/picorv32a/src/sky130_fd_sc_hd__slow.lib"
+set ::env(LIB_TYPICAL) "$::env(OPENLANE_ROOT)/designs/picorv32a/src/sky130_fd_sc_hd__typical.lib"
+
+# Include the custom LEF file
+set ::env(EXTRA_LEFS) [glob $::env(OPENLANE_ROOT)/designs/$::env(DESIGN_NAME)/src/*.lef]
+
+```
+Screenshot of the Edited config.tcl:
+
+
+
+  ![image](https://github.com/user-attachments/assets/b4bd11c9-e13d-4841-b42a-e03907f3db52)
+
+  ### Task 6: Run OpenLane synthesis with the newly inserted custom inverter cell.
+
+* To synthesize the design with the custom inverter cell included, follow the steps below.
+
+Commands to Run OpenLANE Flow Synthesis:
+
+```bash
+# Change directory to the OpenLANE flow working directory
+cd Desktop/work/tools/openlane_working_dir/openlane
+```
+```bash
+# Invoke the OpenLANE Docker subsystem
+docker
+```
+```tcl
+# Enter Interactive Mode in OpenLANE flow
+./flow.tcl -interactive
+
+```
+```tcl
+# Load required packages
+package require openlane 0.9
+```
+```tcl
+# Prepare the 'picorv32a' design
+prep -design picorv32a
+```
+```tcl
+# Include the newly added LEF file into the OpenLANE flow
+set lefs [glob $::env(DESIGN_DIR)/src/*.lef]
+add_lefs -src $lefs
+```
+```tcl
+# Run synthesis for the design
+run_synthesis
+```
+
+Screenshots of Commands Execution:
+![image](https://github.com/user-attachments/assets/1714d151-9c9c-4e54-b2a2-060e9be74b4a)
+
+![image](https://github.com/user-attachments/assets/d575bb11-e941-48c4-82f9-ffa72d666b55)
+
+![image](https://github.com/user-attachments/assets/858fe156-6eff-4099-b52c-95f3cd895940)
+
+
+
+### Task 7: Address any violations caused by the custom cell by adjusting design parameters.
+
+* After adding the custom inverter cell, the design may introduce timing violations. Here’s how to modify design parameters to improve timing.
+
+  Initial Design Values Before Modifications:
+
+  Screenshots of initial values:
+
+![image](https://github.com/user-attachments/assets/072952c7-18e4-4c57-9cc7-56d6119dacac)
+
+
+  Commands to Modify Parameters and Improve Timing:
+
+  ```tcl
+  # Prep the design again to update variables
+  prep -design picorv32a -tag 15-9_06-37 -overwrite
+  ```
+  ```tcl
+  # Include newly added lef into the flow
+  set lefs [glob $::env(DESIGN_DIR)/src/*.lef]
+  add_lefs -src $lefs
+  ```
+  ```tcl
+  # Display current value of SYNTH_STRATEGY
+  echo $::env(SYNTH_STRATEGY)
+  ```
+  ```tcl
+  # Set new value for SYNTH_STRATEGY
+  set ::env(SYNTH_STRATEGY) "DELAY 3"
+  ```
+  ```tcl
+  # Check if SYNTH_BUFFERING is enabled
+  echo $::env(SYNTH_BUFFERING)
+  ```
+  ```tcl
+  # Check current value of SYNTH_SIZING
+  echo $::env(SYNTH_SIZING)
+  ```
+  ```tcl
+  # Set new value for SYNTH_SIZING
+  set ::env(SYNTH_SIZING) 1
+
+  ```
+  ```tcl
+  # Check the current SYNTH_DRIVING_CELL
+  echo $::env(SYNTH_DRIVING_CELL)
+  ```
+  ```tcl
+  # Run synthesis again after updating parameters
+  run_synthesis
+  ```
+
+  Result of the Synthesis:
+
+  * Custom inverter cell is now included in the design.
+  * Screenshot of the merged.lef file in the tmp directory confirming the custom inverter as a macro:
+ 
+![merged lef file](https://github.com/user-attachments/assets/96770974-03d4-4b31-b8ac-ac8aee5482c4)
+
+
+Screenshots of Commands Execution:
+
+![image](https://github.com/user-attachments/assets/640707e0-2768-4493-8e36-57eb65ac8115)
+![image](https://github.com/user-attachments/assets/a8007b4b-2db0-4037-9f72-4625d699527a)
+
+
+
+Comparing Results After Modifications:
+
+* Area: Increased slightly.
+* Worst Negative Slack: Improved, now at 0.
+### Task 8: Run floorplanning and placement, verifying the custom cell's integration in the PnR flow.
+
+* Once the custom inverter cell has been accepted during synthesis, we proceed with floorplanning and placement in the PnR flow.
+
+Floorplan Command
+Run the run_floorplan command:
+```tcl
+# Command to run floorplan
+run_floorplan
+```
+However, encountering errors while using this command led us to use the following individual commands to manually initiate the floorplan process:
+
+```tcl
+# Initialize floorplan
+init_floorplan
+```
+```tcl
+# Place I/O pins
+place_io
+```
+```tcl
+# Add tap and decap cells
+tap_decap_or
+```
+Floorplan Command Execution Screenshots:
+  ![image](https://github.com/user-attachments/assets/32104a19-80b3-4bd0-977d-d27f2b03501e)
+
+  ![image](https://github.com/user-attachments/assets/499d7021-6190-4e52-bf81-a26a2724933c)
+
+
+
+Placement Command
+*  Once the floorplan is complete, we proceed with placement using the following command:
+
+   ```tcl
+   # Command to run placement
+    run_placement
+   ```
+
+   Placement Command Execution Screenshots:
+
+   * Placement process:
+![image](https://github.com/user-attachments/assets/f940469f-2715-4ab1-9ebb-6e7388e51ae8)
+
+
+  Load Placement DEF in Magic for Visualization
+  * To verify that the custom inverter cell has been accepted into the flow and placed correctly, we load the generated placement DEF into Magic.
+
+  ```bash
+  # Change directory to placement result folder
+  cd Desktop/work/tools/openlane_working_dir/openlane/designs/picorv32a/runs/15-9_06-37/results/placement/
+  ```
+  ```bash
+  # Load placement def in magic
+  magic -T /home/vsduser/Desktop/work/tools/openlane_working_dir/pdks/sky130A/libs.tech/magic/sky130A.tech lef read ../../tmp/merged.lef def read picorv32a.placement.def &
+  ```
+Magic Visualization Screenshots:
+* Viewing the placement DEF in Magic:
+
+  ![day 4 magic open](https://github.com/user-attachments/assets/adac3418-f39b-4f83-b30a-44e48f0381ed)
+
+* Zooming in on the custom inverter with proper abutment:
+
+  ![zoom to inverter](https://github.com/user-attachments/assets/59240d31-63b6-4e61-8fc9-7da232da460d)
+
+View Internal Layers of Cells
+
+* We use the expand command in Magic to view internal connectivity layers of the placed cells, ensuring correct abutment.
+
+  ```tcl
+  # Command to view internal connectivity layers
+  expand
+  ```
+  Abutment Verification Screenshots:
+
+  * Custom inverter cell properly abutting power pins with other cells from the library:
+
+    ![expand](https://github.com/user-attachments/assets/d6c1abb5-09bc-492e-8331-927d6780b813)
+
+
+    ### Task 9: Perform post-synthesis timing analysis using the OpenSTA tool.
+
+With synthesis completed and the custom inverter cell accepted, we move on to performing a timing analysis using the OpenSTA tool. The goal is to analyze the timing of the initial synthesis run, which had numerous violations before any timing improvements were made.
+
+
+Initial Synthesis and STA Setup
+
+  1.Run Synthesis Command:
+  * Navigate to the OpenLANE flow directory and run the synthesis with the following commands:
+
+  ```bash
+  cd Desktop/work/tools/openlane_working_dir/openlane
+  ```
+  ```bash
+  docker
+   ```
+  Inside the Docker container:
+      
+  ```tcl
+  ./flow.tcl -interactive
+  ```
+  ```tcl
+  package require openlane 0.9
+  ```
+  ```tcl
+  prep -design picorv32a
+  ```
+  ```tcl
+  set lefs [glob $::env(DESIGN_DIR)/src/*.lef]
+  add_lefs -src $lefs
+  ```
+  ```tcl
+  set ::env(SYNTH_SIZING) 1
+  ```
+  ```tcl
+  run_synthesis
+  ```
+      
+  Screenshots of Final Synthesis Command Run:
+      ![image](https://github.com/user-attachments/assets/ca185f73-b93a-4d40-b0cf-744c390bcce4)
+
+
+
+    
+2. Create STA Configuration Files:
+
+   * pre_sta.conf: STA configuration file located in the openlane directory.
+
+     ![sta file](https://github.com/user-attachments/assets/efefc18f-e883-419d-a390-f935b3dfbd5c)
+     
+
+   * my_base.sdc: SDC file for STA analysis, based on openlane/scripts/base.sdc, located in openlane/designs/picorv32a/src.
+
+     ![base file](https://github.com/user-attachments/assets/7a16d982-5684-422a-9cd4-dda7ce1df880)
+
+     
+3. Run STA Analysis:
+
+   Execute the STA analysis using OpenSTA tool:
+   ```bash
+   cd Desktop/work/tools/openlane_working_dir/openlane
+   ```
+   ```bash
+   sta pre_sta.conf
+   ```
+   Screenshots of STA Commands and Results:
+
+   ![image](https://github.com/user-attachments/assets/58f0b46c-5631-4ee1-9f0d-4eb1d74734f2)
+
+   ![image](https://github.com/user-attachments/assets/0e130101-f9d3-4584-9c82-365d25f204bd)
+   ![image](https://github.com/user-attachments/assets/8d8d6720-40ba-40e0-971f-329b39d5f739)
+![image](https://github.com/user-attachments/assets/6648a531-ff71-4bd4-b9ec-8fe3d996505e)
+
+![image](https://github.com/user-attachments/assets/0778dabc-1f80-49e4-8e89-7e0e04f7011f)
+
+
+
+
+Post-Synthesis Timing Improvement
+
+  1.Adjust Parameters:
+
+  * Based on initial STA results indicating high fanout and delays, modify the synthesis parameters to reduce fanout and improve timing:
+
+      ![day 4 post synthesis](https://github.com/user-attachments/assets/9866a4be-441b-4ee5-9658-acfc9db68864)
+
+  2.Run STA Analysis Again:
+
+  * Re-run the STA analysis with the updated design:
+
+   ```bash
+   cd Desktop/work/tools/openlane_working_dir/openlane
+   ```
+   ```bash
+   sta pre_sta.conf
+   ```
+  Screenshots of STA Commands and Results after Adjustment:
+
+
+  ![post sta 2](https://github.com/user-attachments/assets/7177ea2a-bff3-4f47-ab03-1b248138af86)
+
+  ![post sta 3](https://github.com/user-attachments/assets/c690ba5e-76df-47a5-8d7b-3ac059b72af2)
+
+
+
+
+
+### Task 10: Apply timing ECO fixes to resolve any timing violations.
+
+* In this section, we will discuss how to perform Timing ECO (Engineering Change Order) fixes to address timing violations in a design. The goal is to optimize the timing by replacing logic gates with higher drive strength versions and verify the results using timing analysis.
+
+* We are optimizing a design by replacing OR gates with higher drive strength versions to reduce slack violations. The design initially has a Worst Negative Slack (WNS) of -23.9000 ns, which we aim to improve through ECO fixes.
+
+
+OR Gate Driving 4 Fanouts
+
+  * In this case, an OR gate with drive strength 2 is driving 4 fanouts. We replace it with an OR gate of drive strength 4 to improve timing performance.
+
+
+Command Sequence:
+
+```tcl
+# Reports all the connections to a specific net
+report_net -connections _11672_
+```
+```tcl
+# Checking command syntax for replacing cells
+help replace_cell
+```
+```tcl
+# Replacing the cell with a higher drive strength OR gate
+replace_cell _14510_ sky130_fd_sc_hd__or3_4
+```
+```tcl
+# Generating a custom timing report
+report_checks -fields {net cap slew input_pins} -digits 4
+```
+
+Result:
+
+  * After replacing the cell, the slack was reduced. Below are the screenshots showing the improved timing:
+
+  
+
+
+ Further Optimization with Another OR Gate Replacement
+
+ * Similarly, another OR gate with drive strength 2 was driving 4 fanouts, leading to additional timing violations. Replacing it with an OR gate of drive strength 4 further improves the timing.
+
+
+   
+
+
+    ```tcl
+    # Reports all the connections to a specific net
+    report_net -connections _11675_
+    ```
+    ```tcl
+    # Replacing the cell with a higher drive strength OR gate
+    replace_cell _14514_ sky130_fd_sc_hd__or3_4
+    ```
+    ```tcl
+    # Generating a custom timing report
+    report_checks -fields {net cap slew input_pins} -digits 4
+    ```
+
+Result:
+
+  * The slack was further reduced after this fix.
+
+ 
+
+
+OR Gate Driving OA Gate with Increased Delay
+
+* An OR gate with drive strength 2 was driving an OA gate, leading to significant delay. We replace this OR gate with a higher drive strength version to optimize the design.
+
+  
+
+  Slack:
+
+   
+
+    ```tcl
+    # Reports all the connections to a specific net
+    report_net -connections _11643_
+    ```
+    ```tcl
+    # Replacing the cell with a higher drive strength OR gate
+    replace_cell _14481_ sky130_fd_sc_hd__or4_4
+    ```
+    ```tcl
+    # Generating a custom timing report
+    report_checks -fields {net cap slew input_pins} -digits 4
+    ```
+
+Result:
+
+  * The slack was further reduced after this fix.
+
+
+OR Gate Driving OA Gate with Increased Delay
+
+* An OR gate with drive strength 2 was driving an OA gate, leading to significant delay. We replace this OR gate with a higher drive strength version to optimize the design.
+
+  ![OA 2](https://github.com/user-attachments/assets/3ab25754-2dc1-4f59-b7ee-82595684c332)
+
+
+  Slack:
+
+  
+
+
+   ```tcl
+    # Reports all the connections to a specific net
+    report_net -connections _11668_
+    ```
+    ```tcl
+    # Replacing the cell with a higher drive strength OR gate
+    replace_cell _14506_ sky130_fd_sc_hd__or4_4
+    ```
+    ```tcl
+    # Generating a custom timing report
+    report_checks -fields {net cap slew input_pins} -digits 4
+    ```
+
+Result:
+
+  * The slack was further reduced after this fix.
+
+    
+
+Verifying the Replaced Instance\
+
+* To ensure that the instance _14506_ has been successfully replaced with sky130_fd_sc_hd__or4_4, we can run the following command:
+
+  ```tcl
+  # Verifying the replaced instance
+  report_checks -from _29043_ -to _30440_ -through _14506_
+  ```
+  
+ 
+  
+
+
+
+    
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+  
+
 
 
 
