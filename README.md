@@ -1316,7 +1316,7 @@ Screenshots of Commands Execution:
 
 ### Task 7: Address any violations caused by the custom cell by adjusting design parameters.
 
-* After adding the custom inverter cell, the design may introduce timing violations. Here’s how to modify design parameters to improve timing.
+* The design may introduce timing violations After adding the custom inverter cell. Here’s how to modify design parameters to improve timing.
 
   Initial Design Values Before Modifications:
 
@@ -1327,7 +1327,7 @@ Screenshots of Commands Execution:
 
   ```tcl
   # Prep the design again to update variables
-  prep -design picorv32a -tag 15-9_06-37 -overwrite
+  prep -design picorv32a -tag 29-09_13-32 -overwrite
   ```
   ```tcl
   # Include newly added lef into the flow
@@ -1436,7 +1436,7 @@ Placement Command
 
   ```bash
   # Change directory to placement result folder
-  cd Desktop/work/tools/openlane_working_dir/openlane/designs/picorv32a/runs/15-9_06-37/results/placement/
+  cd Desktop/work/tools/openlane_working_dir/openlane/designs/picorv32a/runs/29-09_13-32/results/placement/
   ```
   ```bash
   # Load placement def in magic
@@ -1611,7 +1611,7 @@ Result:
 
  Further Optimization with Another OR Gate Replacement
 
- * Similarly, another OR gate with drive strength 2 was driving 4 fanouts, leading to additional timing violations. Replacing it with an OR gate of drive strength 4 further improves the timing.
+ * Similarly, another OR gate with drive strength 2 was driving 5 fanouts, leading to additional timing violations. Replacing it with an OR gate of drive strength 4 further improves the timing.
 
    ![image](https://github.com/user-attachments/assets/cacbd108-ca5b-4585-ac59-754e00b913e9)
 
@@ -1624,7 +1624,7 @@ Result:
 
     ```tcl
     # Reports all the connections to a specific net
-    report_net -connections _11675_
+    report_net -connections _10910_
     ```
     ```tcl
     # Replacing the cell with a higher drive strength OR gate
@@ -1687,7 +1687,7 @@ OR Gate Driving OA Gate with Increased Delay
 
    ```tcl
     # Reports all the connections to a specific net
-    report_net -connections _11668_
+    report_net -connections _10910_
     ```
     ```tcl
     # Replacing the cell with a higher drive strength OR gate
@@ -1710,7 +1710,7 @@ Commands:
 
 ```bash
 # Change from the home directory to the synthesis results directory
-cd Desktop/work/tools/openlane_working_dir/openlane/designs/picorv32a/runs/15-09_10-33/results/synthesis/
+cd Desktop/work/tools/openlane_working_dir/openlane/designs/picorv32a/runs/30-09_17-43/results/synthesis/
 ```
 ```bash
 # List the contents of the directory
@@ -1741,7 +1741,7 @@ help write_verilog
 ```
 ```tcl
 # Overwrite the current synthesis netlist
-write_verilog /home/vsduser/Desktop/work/tools/openlane_working_dir/openlane/designs/picorv32a/runs/15-09_10-33/results/synthesis/picorv32a.synthesis.v
+write_verilog /home/vsduser/Desktop/work/tools/openlane_working_dir/openlane/designs/picorv32a/runs/30-09_17-43/results/synthesis/picorv32a.synthesis.v
 ```
 ```tcl
 # Exit from OpenSTA as timing analysis is complete
@@ -1762,7 +1762,7 @@ Commands to Load the Design and Run the Necessary Stages:
 
 ```tcl
 # Prep the design to update the variables
-prep -design picorv32a -tag 24-03_10-03 -overwrite
+prep -design picorv32a -tag 30-09_17-43 -overwrite
 ```
 ```tcl
 # Include newly added LEF files to the OpenLane flow (merged.lef)
@@ -1822,10 +1822,10 @@ Commands to Run OpenROAD Timing Analysis:
 openroad
 
 # Read the LEF file to define the physical layout of standard cells
-read_lef /openLANE_flow/designs/picorv32a/runs/24-03_10-03/tmp/merged.lef
+read_lef /openLANE_flow/designs/picorv32a/runs/29-09_13-32/tmp/merged.lef
 
 # Read the DEF file to get the design's placement data post-CTS
-read_def /openLANE_flow/designs/picorv32a/runs/15-09_10-33/results/cts/picorv32a.cts.def
+read_def /openLANE_flow/designs/picorv32a/runs/30-09_17-43/results/cts/picorv32a.cts.def
 
 # Create an OpenROAD database (DB) for the design
 write_db pico_cts.db
@@ -1834,7 +1834,7 @@ write_db pico_cts.db
 read_db pico_cts.db
 
 # Read the post-CTS netlist
-read_verilog /openLANE_flow/designs/picorv32a/runs/15-09_10-33/results/synthesis/picorv32a.synthesis_cts.v
+read_verilog /openLANE_flow/designs/picorv32a/runs/30-09_17-43/results/synthesis/picorv32a.synthesis_cts.v
 
 # Read the Liberty file for the design (this defines cell delays, constraints, etc.)
 read_liberty $::env(LIB_SYNTH_COMPLETE)
@@ -1882,7 +1882,7 @@ echo $::env(CTS_CLK_BUFFER_LIST)
 echo $::env(CURRENT_DEF)
 
 # Set the DEF file to the placement DEF
-set ::env(CURRENT_DEF) /openLANE_flow/designs/picorv32a/runs/15-09_10-33/results/placement/picorv32a.placement.def
+set ::env(CURRENT_DEF) /openLANE_flow/designs/picorv32a/runs/30-09_17-43/results/placement/picorv32a.placement.def
 
 # Re-run CTS with the updated buffer list
 run_cts
@@ -1894,10 +1894,10 @@ echo $::env(CTS_CLK_BUFFER_LIST)
 openroad
 
 # Read the LEF file
-read_lef /openLANE_flow/designs/picorv32a/runs/15-09_10-33/tmp/merged.lef
+read_lef /openLANE_flow/designs/picorv32a/runs/30-09_17-43/tmp/merged.lef
 
 # Read the updated DEF file post-CTS
-read_def /openLANE_flow/designs/picorv32a/runs/15-09_10-33/results/cts/picorv32a.cts.def
+read_def /openLANE_flow/designs/picorv32a/runs/30-09_17-43/results/cts/picorv32a.cts.def
 
 # Create a new OpenROAD database
 write_db pico_cts1.db
@@ -1906,7 +1906,7 @@ write_db pico_cts1.db
 read_db pico_cts.db
 
 # Read the netlist post-CTS
-read_verilog /openLANE_flow/designs/picorv32a/runs/15-09_10-33/results/synthesis/picorv32a.synthesis_cts.v
+read_verilog /openLANE_flow/designs/picorv32a/runs/30-09_17-43/results/synthesis/picorv32a.synthesis_cts.v
 
 # Read the Liberty file for synthesis
 read_liberty $::env(LIB_SYNTH_COMPLETE)
@@ -1937,7 +1937,7 @@ exit
 Screenshots of commands run and timing report generated:
 
 ![image](https://github.com/user-attachments/assets/774bb874-9720-41ca-840e-b22bbd64a0eb)
-![image](https://github.com/user-attachments/assets/2d5e613b-0e1b-43ea-9060-e27308ad7683)
+
 
 
 
@@ -2027,7 +2027,6 @@ Commands for Generating PDN
 
 Screenshots of PDN Generation:
 
-![image](https://github.com/user-attachments/assets/92dcf2c4-39a8-4396-9b29-d29b62c6f70d)
 
 ![image](https://github.com/user-attachments/assets/b87d96fb-7f74-4304-90ac-36080742687d)
 
@@ -2039,7 +2038,7 @@ Viewing the PDN Layout in Magic:
 
   ```bash
   # Change to the floorplan directory
-  cd Desktop/work/tools/openlane_working_dir/openlane/designs/picorv32a/runs/16-09_06-34/tmp/floorplan/
+  cd Desktop/work/tools/openlane_working_dir/openlane/designs/picorv32a/runs/30-09_17-43/tmp/floorplan/
   ```
   ```bash
   # Load PDN in Magic
@@ -2077,7 +2076,7 @@ Viewing the Routed Layout in Magic:
 
 ```bash
 # Change to the routed def directory
-cd Desktop/work/tools/openlane_working_dir/openlane/designs/picorv32a/runs/16-09_06-34/results/routing/
+cd Desktop/work/tools/openlane_working_dir/openlane/designs/picorv32a/runs/30-09_17-43/results/routing/
 ```
 ```bash
 # Load routed DEF in Magic
@@ -2104,10 +2103,10 @@ Using OpenSTA, we performed timing analysis with the parasitics included:
 openroad
 
 # Reading lef file
-read_lef /openLANE_flow/designs/picorv32a/runs/16-09_06-34/tmp/merged.lef
+read_lef /openLANE_flow/designs/picorv32a/runs/30-09_17-43/tmp/merged.lef
 
 # Reading def file
-read_def /openLANE_flow/designs/picorv32a/runs/16-09_06-34/results/routing/picorv32a.def
+read_def /openLANE_flow/designs/picorv32a/runs/30-09_17-43/results/routing/picorv32a.def
 
 # Creating an OpenROAD database to work with
 write_db pico_route.db
@@ -2116,7 +2115,7 @@ write_db pico_route.db
 read_db pico_route.db
 
 # Read netlist post CTS
-read_verilog /openLANE_flow/designs/picorv32a/runs/16-09_06-34/results/synthesis/picorv32a.synthesis_preroute.v
+read_verilog /openLANE_flow/designs/picorv32a/runs/30-09_17-43/results/synthesis/picorv32a.synthesis_preroute.v
 
 # Read library for design
 read_liberty $::env(LIB_SYNTH_COMPLETE)
@@ -2131,7 +2130,7 @@ read_sdc /openLANE_flow/designs/picorv32a/src/my_base.sdc
 set_propagated_clock [all_clocks]
 
 # Read SPEF
-read_spef /openLANE_flow/designs/picorv32a/runs/16-09_06-34/results/routing/picorv32a.spef
+read_spef /openLANE_flow/designs/picorv32a/runs/30-09_17-43/results/routing/picorv32a.spef
 
 # Generating custom timing report
 report_checks -path_delay min_max -fields {slew trans net cap input_pins} -format full_clock_expanded -digits 4
