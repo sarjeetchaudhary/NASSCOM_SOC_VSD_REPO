@@ -507,7 +507,7 @@ Area\ of\ die\ in\ microns = 660.685 * 671.405 = 443587.212425\ Square\ Microns
 Commands to Load Floorplan DEF in Magic:
 1.Change directory to path containing generated floorplan def
 ```bash
-cd Desktop/work/tools/openlane_working_dir/openlane/designs/picorv32a/runs/07-09_20-37/results/floorplan/
+cd Desktop/work/tools/openlane_working_dir/openlane/designs/picorv32a/runs/28-09_06-31/results/floorplan/
 ```
 2.Command to load the floorplan def in magic tool
 ```bash
@@ -552,7 +552,7 @@ To load the generated placement DEF file in the Magic tool, use the following co
 Commands to Load Placement DEF in Magic
 1.Navigate to the directory containing the placement DEF file:
 ```bash
-cd Desktop/work/tools/openlane_working_dir/openlane/designs/picorv32a/runs/07-09_20-37/results/placement/
+cd Desktop/work/tools/openlane_working_dir/openlane/designs/picorv32a/runs/28-09_06-31/results/placement/
 ```
 2.Load the placement DEF in Magic:
 ```bash
